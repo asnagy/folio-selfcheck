@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
+import Moment from 'moment';
 import { MMKV } from 'react-native-mmkv';
 
 import './App.css';
 
-import DoneIcon from '@mui/icons-material/Done';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,9 +14,6 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
@@ -63,11 +59,12 @@ export default class UserAccount extends Component<Props> {
     .then((response) => response.json())
     .then((responseJson) => {
       userObj = responseJson.users[0];
+      console.log("User Obj:");
       console.log(userObj);
       this.setState({userObj: userObj});
 
       //fetch(this.state.OKAPI_URL + '/patron/account/' + userObj.id, {
-      fetch(this.state.OKAPI_URL + '/circulation/loans?query=userId==' + userObj.id + ' and status.name==Open', {
+      fetch(this.state.OKAPI_URL + '/circulation/loans?limit=1000&query=userId==' + userObj.id + ' and status.name==Open', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -102,6 +99,7 @@ export default class UserAccount extends Component<Props> {
   }
 
   render () {
+    Moment.locale('en');
 
     console.log("User Account Screen");
 
@@ -133,21 +131,26 @@ export default class UserAccount extends Component<Props> {
         <Divider />
 
         <Box sx={{ p: 2 }}>
-          <Typography gutterBottom variant="h6">
-            Checked Out Items
+          <Typography variant="h6">
+            You have {this.state.activeItems.length} Checked Out Items
           </Typography>
 
               <List>
                 {this.state.activeItems.map((listItem, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={listItem['item']['title']} secondary={listItem['dueDate']} />
+                  <ListItem key={index}
+                            secondaryAction={
                     <Button
                       onClick={() => this.props.navigation.navigate('Home')}
                       variant="contained"
                       size="large"              
-                      sx={{ mt: 3, mb: 2 }}>
+                      sx={{ mt: 3, mb: 2, marginLeft: "auto" }}>
                         Renew
                     </Button>
+                  }>
+                    <ListItemText
+                      style={{ maxWidth: "fit-content", wordBreak: "break-all" }}
+                      primary={listItem['item']['title']}
+                      secondary={`Due: ${Moment(listItem.dueDate).format('MMMM D, YYYY')}`} />
                   </ListItem>
                 ))}
               </List>
