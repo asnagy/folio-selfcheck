@@ -1,8 +1,38 @@
-# Getting Started with Create React App
+# Self Service mobile app for FOLIO LSP
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A react native project to provide a native app designed for a tablet device to provide Self Service tools for libraries using the FOLIO LSP (https://folio.org).
 
-## Available Scripts
+## Introduction
+
+## Configuring the App
+
+1. The first step to setup the FOLIO Self Service app is to establish an API user in FOLIO if you have not already created an API user account. This will allow you to ensure all API based actions are recorded as such. 
+2. Create a service point that will reflect the Self Service App location. For example, if you have a location in FOLIO for "first floor", you might create an affiliated service point called "self service app" attached to this location. Once the service point is created, please note the ID number of the service point. This will be identified in the URL of the service point. You need to note the Serivce Point ID, not the name nor code of the service point.
+3. Once the app is loaded on the mobile device and the app is started, the first thing you will need to do in order to setup the app is to touch the Settings icon at the bottom of the screen. Here you will need to enter the following:
+
+### OKAPI URL
+
+Settings > Developer > Okapi console > Configuration > URL
+
+### OKAPI Tenant
+
+Settings > Developer > Okapi console > Configuration > Tenant
+
+### Service Point ID
+
+Settings > Tenant > Service points
+Select the service point that you want to affiliate the Self Service app with. Once you have selected it, you will need to record the ID from the URL.
+https://myfoliourl/settings/tenant-settings/servicePoints/<ID>
+
+### FOLIO API Username
+
+The username of your API user.
+
+### FOLIO API Password
+
+The password of your API user.
+
+## Developers: Running the react native app locally
 
 In the project directory, you can run:
 
