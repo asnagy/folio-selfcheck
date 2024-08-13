@@ -8,6 +8,7 @@ import UserScan from './UserScan';
 import UserAccount from './UserAccount';
 import ItemScan from './ItemScan';
 import Register from './Register';
+import RegisterSuccess from './RegisterSuccess';
 import SettingsView from './SettingsView';
 
 const Stack = createStackNavigator();
@@ -25,7 +26,8 @@ export default class App extends Component<Props> {
           <Stack.Screen name="UserAccount" component={UserAccount} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'push' }} />
           <Stack.Screen name="ItemScan" component={ItemScan} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'pop' }} />
           <Stack.Screen name="Register" component={Register} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'pop' }} />
-          <Stack.Screen name="SettingsView" component={SettingsView} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'pop' }} />
+          <Stack.Screen name="RegisterSuccess" component={RegisterSuccess} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'push' }} />
+          <Stack.Screen name="SettingsView" component={SettingsView} options={{ headerShown: false, animationEnabled: true, animationTypeForReplace: 'push' }} />
         </Stack.Navigator>
       </NavigationContainer>
     );
