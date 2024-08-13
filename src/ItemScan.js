@@ -9,7 +9,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -48,7 +47,6 @@ export default class ItemScan extends Component<Props> {
   }
 
   fetchUser = (userBarcode) => {
-    let userObj = '';
     let queryParams = "/users?query=barcode==" + userBarcode
 
     console.log("Fetch User: " + this.state.OKAPI_URL + queryParams);
