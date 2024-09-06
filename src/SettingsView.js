@@ -6,9 +6,12 @@ import './App.css';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
 
 // Main Class
 export default class SettingsView extends Component<Props> {
@@ -19,9 +22,12 @@ export default class SettingsView extends Component<Props> {
     // Define State Variables
     this.state = { okapiUrl: '',
                     okapiTenant: '',
-                    servicePointId: '',                    
+                    servicePointId: '',
+                    newAccountEnable: false,
                     apiUsername: '',
                     apiPassword: '',                    
+                    errorMsg: '',
+                    successMsg: ''
                  };
   }
 
@@ -51,7 +57,11 @@ export default class SettingsView extends Component<Props> {
         storage.set('okapiTenant', this.state.okapiTenant);
         storage.set('okapiToken', responseJson.okapiToken);
         storage.set('servicePointId', this.state.servicePointId);
+        storage.set('newAccountEnable', this.state.newAccountEnable);
 
+        this.setState({
+          successMsg: "Settings Saved."
+        });
     })
     .catch((error) => {
       console.log("Fetch Error:" + error);
@@ -70,12 +80,11 @@ export default class SettingsView extends Component<Props> {
     <div className="App">
       <Container component="main" maxWidth="md">
         <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}>
+        <Box justifyContent="flex-start"
+          sx={{ marginTop: 4 }}>
+
+          { this.state.errorMsg !== '' ? <Container component="main" maxWidth="md"><Alert severity="error">{this.state.errorMsg}</Alert></Container> : null }          
+          { this.state.successMsg !== '' ? <Container component="main" maxWidth="md"><Alert severity="success">{this.state.successMsg}</Alert></Container> : null }          
 
           <Typography component="h1" variant="h3">
             Self Check App Settings
@@ -114,6 +123,19 @@ export default class SettingsView extends Component<Props> {
               label="Service Point ID"
               name="servicePointId"
               defaultValue={storage.getString('servicePointId')}
+            />
+
+            <FormControlLabel
+              label="Enable New Account Creation"
+              control={
+            <Checkbox
+              onChange={(text) => this.setState({newAccountEnable:true})}
+              id="newAccountDisable"
+              label="Enable New Account Creation"
+              labelPlacement="end"
+              name="newAccountEnable"
+            />
+              }
             />
 
             <TextField

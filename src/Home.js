@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { MMKV } from 'react-native-mmkv';
 
 import './App.css';
 
@@ -18,6 +19,11 @@ export default class Home extends Component<Props> {
 
   render () {
 
+    // Pull config data from local storage
+    const storage = new MMKV();
+
+    const showNewAccount = storage.getString('newAccountEnable') === 'true' ? true : false;
+
     return (
     <div className="App">
       <Container component="main" maxWidth="md">
@@ -32,6 +38,9 @@ export default class Home extends Component<Props> {
           <Typography component="h1" variant="h3">
             Library Self Check Out
           </Typography>
+          <Typography component="h1" variant="h6">
+            Choose an option below to begin
+          </Typography>
 
           <Card variant="outlined" sx={{ margin: 5 }}>
             <Box sx={{ p: 2 }}>
@@ -41,6 +50,7 @@ export default class Home extends Component<Props> {
                   fullWidth
                   variant="contained"
                   size="large"              
+                  style={{padding:"40px 0px"}}
                   sx={{ mt: 3, mb: 2 }}>
                   Start New Check Out
                 </Button>
@@ -74,6 +84,7 @@ export default class Home extends Component<Props> {
               View My Account
             </Button>
 
+            {showNewAccount === true ? (
             <Button
               onClick={() => this.props.navigation.navigate('Register')}
               fullWidth
@@ -82,18 +93,18 @@ export default class Home extends Component<Props> {
               sx={{ mt: 3, mb: 2 }}>
               New Library Card
             </Button>
+            ) : null }
 
               </Stack>
             </Box>
           </Card> 
 
             <Button
+              style={{padding:"10px 0px"}}
               onClick={() => this.props.navigation.navigate('SettingsView')}
-              variant="outlined"
-              sx={{ mt: 3, mb: 2 }}>
+              variant="outlined">
               <Icon><SettingsIcon /></Icon>
             </Button>
-
 
         </Box>
     </Container>
