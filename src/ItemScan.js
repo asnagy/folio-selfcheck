@@ -36,6 +36,7 @@ export default class ItemScan extends Component<Props> {
                    CIRC_SERVICEPOINT: storage.getString('servicePointId'),
                    currentItemBarcode: '',
                    userBarcode: this.props.route.params['userBarcode'],
+                   userId: '',
                    userObj: [{firstName: ''}],
                    itemList: [] };
 
@@ -61,7 +62,8 @@ export default class ItemScan extends Component<Props> {
     })
     .then((response) => response.json())
     .then((responseJson) => {
-        console.log(responseJson.users[0]["personal"]);
+        console.log(responseJson.users[0]);
+        this.setState({userId: responseJson.users[0]["id"]});
         this.setState({userObj: responseJson.users[0]["personal"]});
     })
     .catch((error) => {
@@ -72,6 +74,45 @@ export default class ItemScan extends Component<Props> {
         });
     });
 
+  }
+
+  endSession = () => {
+    console.log("User Obj");
+    console.log(this.state.userObj);
+
+    if (this.state.itemList.length) {
+
+    fetch(this.state.OKAPI_URL + "/circulation/end-patron-action-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-okapi-tenant": this.state.OKAPI_TENANT,
+        "x-okapi-token": this.state.OKAPI_TOKEN
+      },
+      body: JSON.stringify({
+        "endSessions": [
+          {
+            "actionType":"Check-in",
+            "patronId":this.state.userId
+          }
+        ],
+        "totalRecords": this.state.itemList.length
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+        console.log(responseJson);
+    })
+    .catch((error) => {
+      console.log("POST Error:" + error);
+      this.setState({
+          errorMsg: error.message
+        });
+    });
+
+    }
+
+    this.props.navigation.navigate('CheckoutComplete');
   }
 
   runCheckOut = (currentItemBarcode) => {
@@ -103,8 +144,8 @@ export default class ItemScan extends Component<Props> {
           errorMsg: responseJson["errors"][0]["message"],
         });
         console.log(responseJson["errors"][0]["message"]);
-      } else { // CHeckout Successful
-        //state is immutable, so create a temp arry and add to it and then update the state.
+      } else { // Checkout Successful
+        //state is immutable, so create a temp array and add to it and then update the state.
         let tempList = this.state.itemList;
         tempList.push(responseJson);
         console.log("TempList:" + tempList);
@@ -218,7 +259,7 @@ export default class ItemScan extends Component<Props> {
             </Box>            
 
             <Button
-              onClick={() => this.props.navigation.navigate('Home')}
+              onClick={() => this.endSession()}
               fullWidth
               variant="contained"
               size="large"              
@@ -231,6 +272,5 @@ export default class ItemScan extends Component<Props> {
     </div>    
   );
 }
-
 
 }
