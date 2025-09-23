@@ -1,6 +1,6 @@
-# Self Service mobile app for FOLIO LSP
+# Self Service Check Out Mobile App for FOLIO LSP
 
-A react native project to provide a native app designed for a tablet device to provide Self Service tools for libraries using the FOLIO LSP (https://folio.org).
+A react native project to provide a native mobile app designed for a tablet device to provide Self Service Check Out tools for libraries using the FOLIO LSP (https://folio.org).
 
 ## Introduction
 
