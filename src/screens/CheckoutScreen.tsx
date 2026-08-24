@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, Divider, List, Text } from 'react-native-paper';
 
@@ -13,6 +13,7 @@ import { blockText, checkOutByBarcode } from '@/folio/api';
 import { FolioError } from '@/folio/errors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useSession } from '@/session/SessionContext';
+import { useLayout } from '@/utils/useLayout';
 import { formatCurrency, formatDueDate, greetingName } from '@/utils/format';
 import { palette, spacing } from '@/theme';
 
@@ -35,6 +36,7 @@ interface Feedback {
 export function CheckoutScreen({ navigation }: Props) {
   const { settings, client } = useSettings();
   const { patron, checkouts, addCheckout, reportActivity, endSession } = useSession();
+  const { isWide, scannerHeight } = useLayout();
 
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | undefined>();
@@ -145,14 +147,16 @@ export function CheckoutScreen({ navigation }: Props) {
         <Notice tone={feedback.tone} message={feedback.message} detail={feedback.detail} />
       ) : null}
 
-      <View style={styles.columns}>
-        <View style={styles.scannerColumn}>
+      <View style={[styles.columns, isWide ? styles.columnsWide : styles.columnsStacked]}>
+        <View style={isWide ? styles.scannerColumnWide : styles.scannerColumnStacked}>
           {!blocked ? (
-            <CameraScanner
-              paused={busy}
-              label="Item barcode"
-              onScan={(barcode) => void handleBarcode(barcode)}
-            />
+            <View style={{ height: scannerHeight }}>
+              <CameraScanner
+                paused={busy}
+                label="Item barcode"
+                onScan={(barcode) => void handleBarcode(barcode)}
+              />
+            </View>
           ) : null}
 
           {busy ? (
@@ -178,7 +182,17 @@ export function CheckoutScreen({ navigation }: Props) {
           </Text>
           <Divider style={styles.divider} />
 
-          <View accessibilityLiveRegion="polite">
+          {/*
+            The list scrolls in its own right. Without this a long checkout ran
+            off the bottom of the screen in either orientation, with no way for
+            the patron to see what they had already scanned.
+          */}
+          <ScrollView
+            style={styles.listScroll}
+            contentContainerStyle={styles.listContent}
+            keyboardShouldPersistTaps="handled"
+            accessibilityLiveRegion="polite"
+          >
             {checkouts.map((record) => (
               <List.Item
                 key={record.loan.id ?? record.barcode}
@@ -190,7 +204,7 @@ export function CheckoutScreen({ navigation }: Props) {
                 left={(props) => <List.Icon {...props} icon="check-circle" color={palette.success} />}
               />
             ))}
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Screen>
@@ -198,9 +212,19 @@ export function CheckoutScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  columns: { flex: 1, flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md },
-  scannerColumn: { flex: 1, gap: spacing.md },
-  listColumn: { flex: 1 },
+  columns: { flex: 1, gap: spacing.lg, marginTop: spacing.md },
+  columnsWide: { flexDirection: 'row' },
+  columnsStacked: { flexDirection: 'column' },
+  /** Side by side, the scanner shares the width evenly with the list. */
+  scannerColumnWide: { flex: 1, gap: spacing.md },
+  /**
+   * Stacked, the scanner takes only the height it needs so the borrowed list
+   * keeps the rest. `flexShrink: 0` stops a long list squeezing the viewfinder.
+   */
+  scannerColumnStacked: { flexShrink: 0, gap: spacing.md },
+  listColumn: { flex: 1, minHeight: 120 },
+  listScroll: { flex: 1 },
+  listContent: { paddingBottom: spacing.md },
   divider: { marginVertical: spacing.sm },
   busy: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   itemTitle: { fontSize: 20, fontWeight: '600' },

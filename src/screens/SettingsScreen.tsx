@@ -12,6 +12,7 @@ import {
   resetStation,
   setAdminPin,
   type KioskSettings,
+  type OrientationMode,
 } from '@/config/settings';
 import { login } from '@/folio/auth';
 import { FolioClient } from '@/folio/client';
@@ -264,6 +265,22 @@ function SettingsForm({
             value={draft.stationName}
             onChange={(value) => patch('stationName', value)}
           />
+
+          <View style={styles.subsection}>
+            <Text variant="titleMedium">Screen orientation</Text>
+            <HelperText type="info">
+              Pin an orientation for a wall mount, or follow the device for a tablet people pick up.
+            </HelperText>
+            <SegmentedButtons
+              value={draft.orientation}
+              onValueChange={(value) => patch('orientation', value as OrientationMode)}
+              buttons={[
+                { value: 'auto', label: 'Follow device' },
+                { value: 'landscape', label: 'Landscape' },
+                { value: 'portrait', label: 'Portrait' },
+              ]}
+            />
+          </View>
           <Field
             label="Session timeout (seconds)"
             value={String(draft.idleTimeoutSeconds)}

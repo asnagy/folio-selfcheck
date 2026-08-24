@@ -21,6 +21,10 @@ and leave. Staff configure the station behind a PIN.
 - **Self-registration** producing an active, group-assigned, barcoded card.
 - **Idle timeout** that clears the patron's session automatically, with a warning
   dialog first.
+- **Works in either orientation.** Landscape puts the scanner and the borrowed
+  list side by side; portrait stacks them, giving the camera a wide band suited
+  to a library barcode and the list the space below. Staff can pin the
+  orientation for a wall mount or let it follow the device.
 - **Staff settings** behind a PIN gate, with connection verification.
 
 ## Requirements

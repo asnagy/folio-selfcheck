@@ -17,7 +17,15 @@ const KEY_SETTINGS = 'folio.selfcheck.settings';
 const KEY_TOKENS = 'folio.selfcheck.tokens';
 const KEY_ADMIN_PIN = 'folio.selfcheck.adminPin';
 
+/**
+ * How the kiosk sits in its stand. `auto` follows the device, which suits a
+ * tablet people pick up; a wall mount usually wants one orientation pinned so
+ * the screen cannot be rotated by a patron.
+ */
+export type OrientationMode = 'auto' | 'landscape' | 'portrait';
+
 export interface KioskSettings {
+  orientation: OrientationMode;
   baseUrl: string;
   tenant: string;
   servicePointId: string;
@@ -39,6 +47,7 @@ export interface KioskSettings {
 }
 
 export const DEFAULT_SETTINGS: KioskSettings = {
+  orientation: 'auto',
   baseUrl: '',
   tenant: '',
   servicePointId: '',

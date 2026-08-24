@@ -7,26 +7,42 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { activateKeepAwakeAsync } from 'expo-keep-awake';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { SettingsProvider } from '@/config/SettingsContext';
+import { SettingsProvider, useSettings } from '@/config/SettingsContext';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { SessionProvider } from '@/session/SessionContext';
 import { palette, theme } from '@/theme';
 
+const ORIENTATION_LOCKS = {
+  landscape: ScreenOrientation.OrientationLock.LANDSCAPE,
+  portrait: ScreenOrientation.OrientationLock.PORTRAIT_UP,
+  auto: ScreenOrientation.OrientationLock.DEFAULT,
+} as const;
+
 /**
- * Two things every kiosk needs and no phone app does: the screen must never
- * sleep, and the orientation must not follow whichever way a patron tilts the
- * tablet in its stand.
+ * Applies the staff-configured orientation.
  *
- * Both are best-effort. Browsers reject an orientation lock outside fullscreen,
- * and wake lock is unavailable in some contexts; neither is a reason to fail to
- * start, so the kiosk carries on without them.
+ * A wall-mounted kiosk usually wants one orientation pinned so a patron cannot
+ * rotate the screen; a tablet people pick up is better left to follow the
+ * device. Both are best-effort: browsers reject an orientation lock outside
+ * fullscreen, which is not a reason to fail to start.
  */
+function OrientationLock() {
+  const { settings, ready } = useSettings();
+
+  useEffect(() => {
+    if (!ready) return;
+    void ScreenOrientation.lockAsync(ORIENTATION_LOCKS[settings.orientation]).catch(
+      () => undefined,
+    );
+  }, [ready, settings.orientation]);
+
+  return null;
+}
+
+/** The screen must never sleep while the kiosk is in service. */
 export default function App() {
   useEffect(() => {
     void activateKeepAwakeAsync().catch(() => undefined);
-    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(
-      () => undefined,
-    );
   }, []);
 
   return (
@@ -37,6 +53,7 @@ export default function App() {
             <SessionProvider>
               <View style={styles.root}>
                 <StatusBar hidden />
+                <OrientationLock />
                 <RootNavigator />
               </View>
             </SessionProvider>

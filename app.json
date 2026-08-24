@@ -3,7 +3,7 @@
     "name": "Library Self Check Out",
     "slug": "folio-selfcheck",
     "version": "1.0.0",
-    "orientation": "landscape",
+    "orientation": "default",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "folio-selfcheck",
@@ -27,7 +27,6 @@
     },
     "android": {
       "package": "org.folio.selfcheck",
-      "screenOrientation": "landscape",
       "permissions": [
         "android.permission.CAMERA"
       ],
@@ -50,12 +49,6 @@
         {
           "cameraPermission": "The camera is used to scan library card and item barcodes at this self check out station.",
           "recordAudioAndroid": false
-        }
-      ],
-      [
-        "expo-screen-orientation",
-        {
-          "initialOrientation": "LANDSCAPE"
         }
       ],
       "expo-secure-store"
