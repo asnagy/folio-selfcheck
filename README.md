@@ -143,18 +143,62 @@ patrons leaving it:
 Also disable auto-lock, disable notifications, and set the device to charge
 continuously.
 
+## Running in a browser
+
+The app also builds for the web, which is the quickest way to click through the
+screens and test against a real FOLIO tenant without touching a tablet.
+
+```bash
+git clone https://github.com/asnagy/folio-selfcheck
+cd folio-selfcheck
+git checkout claude/library-checkout-kiosk-qqyu5o
+npm install
+npm run web
+```
+
+Then open <http://localhost:8081>. No Xcode, Android Studio or device needed —
+just Node 20+.
+
+**Use Chrome or Edge.** Camera barcode scanning on the web goes through the
+browser's [Barcode Detection API](https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API),
+which Safari and Firefox do not implement. In those browsers the camera panel
+still appears but never reads a code; type barcodes into the manual field
+instead, which exercises the same code path.
+
+On first launch the station is unconfigured, so the checkout buttons are
+disabled. Tap the gear icon — with no staff PIN set yet it opens Settings
+directly — and fill in your gateway URL, tenant, service point ID and service
+account. `localhost` counts as a secure origin, so the browser will grant camera
+access without HTTPS.
+
+### The web build is for development only
+
+> On native, secrets live in the iOS Keychain or Android Keystore. There is no
+> equivalent in a browser, so the web build falls back to `localStorage`, which
+> any script on the origin can read and anyone can inspect through developer
+> tools. That is the exact weakness that made the original web prototype
+> unsuitable for a public kiosk.
+>
+> Use the web build for development, review and demos. Ship the native build to
+> tablets that patrons actually touch.
+
+Two other differences on web: the orientation lock and the wake lock are
+best-effort, because browsers refuse both outside fullscreen. Neither prevents
+the app from starting.
+
 ## Development
 
 ```bash
-npm start          # Expo dev server
+npm start          # Expo dev server, choose a platform
+npm run web        # browser only
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint
 npm test           # jest
 npm run check      # all three
 ```
 
-Camera scanning needs a real device — simulators have no camera. The manual
-barcode field exercises the same code path when developing on a simulator.
+On an iOS simulator or Android emulator there is no camera; use the manual
+barcode field, which follows the same code path as a scan.
 
 ## Project layout
 

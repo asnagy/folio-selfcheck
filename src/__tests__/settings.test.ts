@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as storage from '@/config/secureStorage';
 
 import {
   DEFAULT_SETTINGS,
@@ -13,7 +13,7 @@ import {
   verifyAdminPin,
 } from '@/config/settings';
 
-const store = (SecureStore as unknown as { __store: Map<string, string> }).__store;
+const store = (storage as unknown as { __store: Map<string, string> }).__store;
 
 beforeEach(() => store.clear());
 

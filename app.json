@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#F4F7FB"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
@@ -26,10 +28,21 @@
     "android": {
       "package": "org.folio.selfcheck",
       "screenOrientation": "landscape",
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#F4F7FB"
       }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Library Self Check Out",
+      "shortName": "Self Check",
+      "backgroundColor": "#F4F7FB",
+      "themeColor": "#1B5E9C",
+      "orientation": "landscape"
     },
     "plugins": [
       [
@@ -39,11 +52,18 @@
           "recordAudioAndroid": false
         }
       ],
-      ["expo-screen-orientation", { "initialOrientation": "LANDSCAPE" }],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "LANDSCAPE"
+        }
+      ],
       "expo-secure-store"
     ],
     "extra": {
-      "eas": { "projectId": "00000000-0000-0000-0000-000000000000" }
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
     }
   }
 }

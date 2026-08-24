@@ -15,6 +15,20 @@ jest.mock('expo-screen-orientation', () => ({
   OrientationLock: { LANDSCAPE: 'LANDSCAPE' },
 }));
 
+// The storage adapter is mocked rather than expo-secure-store, so tests cover
+// the same surface both the native and web builds call through.
+jest.mock('@/config/secureStorage', () => {
+  const store = new Map();
+  return {
+    __store: store,
+    isSecureStorage: true,
+    getItemAsync: undefined,
+    getItem: jest.fn(async (k) => (store.has(k) ? store.get(k) : null)),
+    setItem: jest.fn(async (k, v) => void store.set(k, v)),
+    deleteItem: jest.fn(async (k) => void store.delete(k)),
+  };
+});
+
 jest.mock('expo-keep-awake', () => ({
   activateKeepAwakeAsync: jest.fn(async () => undefined),
   deactivateKeepAwake: jest.fn(async () => undefined),

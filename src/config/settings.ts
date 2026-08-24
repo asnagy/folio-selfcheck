@@ -1,5 +1,6 @@
-import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
+
+import { deleteItem, getItem, setItem } from './secureStorage';
 
 import type { AuthTokens } from '@/folio/types';
 
@@ -71,7 +72,7 @@ export function isConfigured(settings: KioskSettings): boolean {
 
 async function readJson<T>(key: string): Promise<T | undefined> {
   try {
-    const raw = await SecureStore.getItemAsync(key);
+    const raw = await getItem(key);
     return raw ? (JSON.parse(raw) as T) : undefined;
   } catch {
     // A corrupt or unreadable entry must not brick the kiosk; fall back to
@@ -81,7 +82,7 @@ async function readJson<T>(key: string): Promise<T | undefined> {
 }
 
 async function writeJson(key: string, value: unknown): Promise<void> {
-  await SecureStore.setItemAsync(key, JSON.stringify(value));
+  await setItem(key, JSON.stringify(value));
 }
 
 export async function loadSettings(): Promise<KioskSettings> {
@@ -101,7 +102,7 @@ export async function saveTokens(tokens: AuthTokens): Promise<void> {
 }
 
 export async function clearTokens(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEY_TOKENS);
+  await deleteItem(KEY_TOKENS);
 }
 
 interface StoredPin {
@@ -137,8 +138,8 @@ export async function verifyAdminPin(pin: string): Promise<boolean> {
 /** Wipe every stored secret. Used by the "reset this station" action. */
 export async function resetStation(): Promise<void> {
   await Promise.all([
-    SecureStore.deleteItemAsync(KEY_SETTINGS),
-    SecureStore.deleteItemAsync(KEY_TOKENS),
-    SecureStore.deleteItemAsync(KEY_ADMIN_PIN),
+    deleteItem(KEY_SETTINGS),
+    deleteItem(KEY_TOKENS),
+    deleteItem(KEY_ADMIN_PIN),
   ]);
 }

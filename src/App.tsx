@@ -16,11 +16,17 @@ import { palette, theme } from '@/theme';
  * Two things every kiosk needs and no phone app does: the screen must never
  * sleep, and the orientation must not follow whichever way a patron tilts the
  * tablet in its stand.
+ *
+ * Both are best-effort. Browsers reject an orientation lock outside fullscreen,
+ * and wake lock is unavailable in some contexts; neither is a reason to fail to
+ * start, so the kiosk carries on without them.
  */
 export default function App() {
   useEffect(() => {
-    void activateKeepAwakeAsync();
-    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    void activateKeepAwakeAsync().catch(() => undefined);
+    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(
+      () => undefined,
+    );
   }, []);
 
   return (
