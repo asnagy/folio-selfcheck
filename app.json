@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "Library Self Check Out",
+    "slug": "folio-selfcheck",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "folio-selfcheck",
+    "primaryColor": "#1B5E9C",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F7FB"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "bundleIdentifier": "org.folio.selfcheck",
+      "infoPlist": {
+        "NSCameraUsageDescription": "The camera is used to scan library card and item barcodes at this self check out station.",
+        "UIRequiresFullScreen": true,
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "org.folio.selfcheck",
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#F4F7FB"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Library Self Check Out",
+      "shortName": "Self Check",
+      "backgroundColor": "#F4F7FB",
+      "themeColor": "#1B5E9C",
+      "orientation": "landscape"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "The camera is used to scan library card and item barcodes at this self check out station.",
+          "recordAudioAndroid": false
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
