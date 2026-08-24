@@ -1,100 +1,185 @@
-# Self Service Check Out Mobile App for FOLIO LSP
+# FOLIO Self Check Out
 
-A react native project to provide a native mobile app designed for a tablet device to provide Self Service Check Out tools for libraries using the FOLIO LSP (https://folio.org).
+A tablet kiosk that lets library patrons borrow items themselves, backed by
+[FOLIO LSP](https://folio.org). Built with Expo and React Native, designed for a
+wall-mounted or stand-mounted tablet in a public area.
 
-## Introduction
+Patrons scan their library card with the device camera, scan the items they want,
+and leave. Staff configure the station behind a PIN.
 
-## Configuring the App
+## What it does
 
-1. The first step to setup the FOLIO Self Service app is to establish an API user in FOLIO if you have not already created an API user account. This will allow you to ensure all API based actions are recorded as such. 
-2. Create a service point that will reflect the Self Service App location. For example, if you have a location in FOLIO for "first floor", you might create an affiliated service point called "self service app" attached to this location. Once the service point is created, please note the ID number of the service point. This will be identified in the URL of the service point. You need to note the Serivce Point ID, not the name nor code of the service point.
-3. Once the app is loaded on the mobile device and the app is started, the first thing you will need to do in order to setup the app is to touch the Settings icon at the bottom of the screen. Here you will need to enter the following:
+- **Camera barcode scanning** for both library cards and items, restricted to the
+  symbologies libraries actually use (Codabar, Code 39/93/128, EAN, UPC, ITF-14).
+- **Hardware scanner support** — a USB or Bluetooth wedge scanner types into the
+  manual entry field and its Enter key submits. The field is not auto-focused,
+  because the soft keyboard would cover the camera viewfinder, so a wedge-only
+  deployment needs one tap on the field to begin.
+- **Optional patron PIN** via `mod-patron-pin`, with a large on-screen keypad.
+- **Account view** showing loans, due dates, overdue items, fees and blocks.
+- **One-tap renewals** through `/circulation/renew-by-barcode`.
+- **Self-registration** producing an active, group-assigned, barcoded card.
+- **Idle timeout** that clears the patron's session automatically, with a warning
+  dialog first.
+- **Staff settings** behind a PIN gate, with connection verification.
 
-### OKAPI URL
+## Requirements
 
-Settings > Developer > Okapi console > Configuration > URL
+- FOLIO on **Eureka (Kong + Keycloak)** or classic Okapi. The app detects which
+  auth flow the tenant supports at configuration time and uses the right one.
+- A FOLIO service account (see permissions below).
+- A service point representing the kiosk's location.
+- iPadOS 15+ or Android 8+, landscape, with a rear camera.
 
-### OKAPI Tenant
+## Setting up FOLIO
 
-Settings > Developer > Okapi console > Configuration > Tenant
+### 1. Create a service point
 
-### Service Point ID
+Settings → Tenant → Service points. Create one for the kiosk, e.g.
+"Self Check — First Floor". Note the UUID from the URL:
 
-Settings > Tenant > Service points
-Select the service point that you want to affiliate the Self Service app with. Once you have selected it, you will need to record the ID from the URL.
-https://myfoliourl/settings/tenant-settings/servicePoints/<ID>
+```
+https://your-folio/settings/tenant-settings/servicePoints/<SERVICE_POINT_ID>
+```
 
-### FOLIO API Username
+You need the **ID**, not the name or code.
 
-The username of your API user.
+### 2. Create a service account
 
-### FOLIO API Password
+Create a dedicated FOLIO user for the kiosk. Do not reuse a staff account — this
+credential lives on a tablet in a public space, and a dedicated account can be
+revoked without disrupting anyone.
 
-The password of your API user.
+Assign only these permissions:
 
-## Developers: Running the react native app locally
+| Capability | Permission | Needed for |
+|---|---|---|
+| Look up patrons | `users.collection.get` | Finding a card by barcode |
+| Read loans | `circulation.loans.collection.get` | Account screen |
+| Check out | `circulation.check-out-by-barcode.post` | Borrowing |
+| End session | `circulation.end-patron-action-session.post` | Triggering the receipt notice |
+| Read service points | `inventory-storage.service-points.item.get` | Verifying configuration |
 
-In the project directory, you can run:
+Optional, depending on which features you enable:
 
-### `npm start`
+| Capability | Permission | Feature |
+|---|---|---|
+| Renew | `circulation.renew-by-barcode.post` | Renewals |
+| Read fees | `accounts.collection.get` | Fees and fines display |
+| Read blocks | `automated-patron-blocks.collection.get`, `manualblocks.collection.get` | Block messages |
+| Verify PIN | `patron-pin.verify.post` | Patron PIN |
+| Create users | `users.item.post` | Self-registration |
+| Read groups | `usergroups.collection.get` | Self-registration |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The app degrades gracefully when an optional permission is missing: fees and
+blocks fall back to empty rather than blocking a checkout.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 3. Configure the station
 
-### `npm test`
+On first launch, tap the gear icon. Because no staff PIN exists yet, it opens
+directly. Enter:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Gateway URL** — Kong's URL on Eureka, Okapi's on classic. No trailing slash.
+- **Tenant** — your tenant ID.
+- **Service point ID** — the UUID from step 1.
+- **Service account username and password.**
 
-### `npm run build`
+Tap **Connect and verify**. This signs in, confirms the service point exists, and
+loads patron groups. Then set a **staff PIN** before leaving the station, or
+anyone can reopen these settings.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Security model
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This is a credentialed device in a public space, so the design is deliberate:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **The service account password is never stored.** It is exchanged once for
+  tokens and discarded. Only tokens reach the keystore, and they can be revoked
+  in FOLIO without touching the password. A test asserts no stored value
+  contains a password.
+- **Tokens live in `expo-secure-store`** — iOS Keychain, Android Keystore — not
+  in app-readable storage.
+- **Access tokens refresh automatically** ahead of expiry, with rotated refresh
+  tokens persisted atomically and concurrent refreshes collapsed onto one
+  request so a rotating token is never spent twice.
+- **The staff PIN is stored as a salted SHA-256 hash**, with a lockout after
+  five wrong attempts.
+- **Patron barcodes are escaped before entering CQL**, so a card barcode
+  containing `*` or `"` cannot widen a query.
+- **Patron identity lives only in session state**, never in navigation params,
+  so clearing the session genuinely removes it.
+- **FOLIO's error text never reaches the screen verbatim.** Every failure is
+  classified into a patron-facing instruction; raw text is kept for diagnostics.
 
-### `npm run eject`
+The residual risk is a physically stolen or rooted tablet, which yields a
+revocable refresh token. Enable device encryption and remote wipe through your
+MDM, and give each kiosk its own service account so one can be revoked alone.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Deploying to tablets
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm install
+npx expo prebuild            # generate native projects
+npx expo run:ios             # or run:android, on a connected device
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+For distribution, build with [EAS](https://docs.expo.dev/build/introduction/):
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npx eas build --platform ios --profile production
+```
 
-## Learn More
+Set `extra.eas.projectId` in `app.json` to your own EAS project first.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Locking the tablet down
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The app keeps the screen awake and locks to landscape, but the OS must stop
+patrons leaving it:
 
-### Code Splitting
+- **iPadOS** — Guided Access (Settings → Accessibility) for a single device, or
+  Single App Mode via an MDM such as Jamf or Mosyle for a fleet.
+- **Android** — screen pinning for a single device, or a device-owner kiosk
+  policy via an EMM for a fleet.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Also disable auto-lock, disable notifications, and set the device to charge
+continuously.
 
-### Analyzing the Bundle Size
+## Development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm start          # Expo dev server
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint
+npm test           # jest
+npm run check      # all three
+```
 
-### Making a Progressive Web App
+Camera scanning needs a real device — simulators have no camera. The manual
+barcode field exercises the same code path when developing on a simulator.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Project layout
 
-### Advanced Configuration
+```
+src/
+  folio/       FOLIO integration: auth, HTTP client, circulation API, error mapping
+  config/      Kiosk settings and secure storage
+  session/     Patron session state and the idle timeout
+  components/  Shared touch-first UI (scanner, keypad, buttons, notices)
+  screens/     One file per screen
+  navigation/  Stack navigator and route types
+  utils/       Date, currency and name formatting
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+The FOLIO layer has no React dependency, so it can be tested directly and
+repointed at a proxy later without touching any screen.
 
-### Deployment
+## Accessibility
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Buttons are at least 72pt tall — above both the 44pt iOS and 48dp Android
+guidance — because patrons use these standing up, sometimes without their
+reading glasses. Body text starts at 18pt and headings at 26pt. Colours hold a
+4.5:1 contrast ratio against their backgrounds. Status messages are announced to
+screen readers via live regions, and decorative elements are hidden from them.
 
-### `npm run build` fails to minify
+## Licence
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+See [LICENSE](LICENSE).
