@@ -158,5 +158,7 @@ const styles = StyleSheet.create({
   itemTitle: { fontSize: 21, fontWeight: '600' },
   itemDescription: { fontSize: 17, color: palette.textMuted },
   overdue: { color: palette.danger, fontWeight: '600' },
-  renewButton: { width: 170, alignSelf: 'center' },
+  // Sized for the longest label this button takes ("Renewing…"), so the busy
+  // state does not truncate either.
+  renewButton: { width: 210, alignSelf: 'center' },
 });

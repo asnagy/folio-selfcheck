@@ -62,6 +62,11 @@ const styles = StyleSheet.create({
   wrapper: { width: '100%' },
   button: { borderRadius: 12 },
   content: { paddingHorizontal: spacing.lg },
-  label: { fontSize: 22, fontWeight: '600', lineHeight: 28 },
-  heroLabel: { fontSize: 30, fontWeight: '700', lineHeight: 38 },
+  /**
+   * `marginHorizontal: 0` overrides Paper's own 24pt label margin. Without it
+   * that margin stacks on top of the padding in `content`, costing 96pt of
+   * horizontal space and truncating short labels on narrow buttons.
+   */
+  label: { fontSize: 22, fontWeight: '600', lineHeight: 28, marginHorizontal: 0 },
+  heroLabel: { fontSize: 30, fontWeight: '700', lineHeight: 38, marginHorizontal: 0 },
 });
