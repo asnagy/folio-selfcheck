@@ -7,7 +7,30 @@ import { MD3LightTheme, configureFonts } from 'react-native-paper';
  * screen stays legible under library fluorescents.
  */
 
+/**
+ * Named colour tokens.
+ *
+ * The home screen's redesign fixed an exact palette, so those values live here
+ * as tokens rather than inline hexes. Existing names are unchanged: the other
+ * screens still reference them, and this pass deliberately does not restyle
+ * them.
+ */
 export const palette = {
+  /** Deep navy: hero ground, headings, emphasised nouns. */
+  navy: '#10243A',
+  /** Accent, pressed state. */
+  accentPressed: '#17517F',
+  /** Body copy on light ground. */
+  body: '#3D4C5C',
+  /** Idle icon tint. */
+  iconIdle: '#8494A4',
+  /** Card border. */
+  border: '#C3CEDA',
+  /** Hairline rule. */
+  rule: '#DCE3EB',
+  /** Card pressed fill. */
+  pressedFill: '#F1F5F9',
+
   primary: '#1B5E9C',
   onPrimary: '#FFFFFF',
   primaryContainer: '#D6E6F5',
@@ -35,6 +58,35 @@ export const spacing = {
   xl: 32,
   xxl: 48,
 } as const;
+
+/** Measurements the redesigned home screen specifies exactly. */
+export const kiosk = {
+  heroHeight: 456,
+  heroInset: 40,
+  heroTopInset: 36,
+  logoSize: 64,
+  actionPaddingTop: 32,
+  primaryHeight: 132,
+  cardHeight: 88,
+  cardPaddingH: 22,
+  gearSize: 56,
+  radiusSmall: 8,
+  radiusLarge: 14,
+  /** Drop shadow beneath the primary action. */
+  primaryShadow: {
+    shadowColor: '#1B5E9C',
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+} as const;
+
+/** Scrim over the hero photo, so text stays legible on any image. */
+export const HERO_SCRIM = {
+  colors: ['rgba(16,36,58,0.72)', 'rgba(16,36,58,0.35)', 'rgba(16,36,58,0.92)'] as const,
+  locations: [0, 0.42, 1] as const,
+};
 
 const fontConfig = {
   displayLarge: { fontSize: 52, lineHeight: 60, fontWeight: '700' as const, letterSpacing: 0 },

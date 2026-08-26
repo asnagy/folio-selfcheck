@@ -15,7 +15,10 @@ import { FolioError } from '@/folio/errors';
 import type { PatronSnapshot } from '@/folio/types';
 import type { RootStackParamList } from '@/navigation/types';
 import { useSession } from '@/session/SessionContext';
+import { SwipeReader } from './home/SwipeReader';
+import { SIGN_IN_COPY } from './home/copy';
 import { greetingName } from '@/utils/format';
+import { parseSwipe } from '@/utils/magstripe';
 import { palette, spacing } from '@/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PatronSignIn'>;
@@ -184,10 +187,15 @@ export function PatronSignInScreen({ navigation, route }: Props) {
     );
   }
 
+  const copy = SIGN_IN_COPY[settings.idMethod];
+  // A mag-stripe reader is keyboard-wedge input, so the camera is not opened at
+  // all for that method — no permission prompt, no viewfinder.
+  const usesCamera = settings.idMethod !== 'magstripe';
+
   return (
     <Screen
-      title="Scan your library card"
-      subtitle="Hold the barcode on your card up to the camera, or type the number below"
+      title={copy.title}
+      subtitle={copy.subtitle}
       scroll={false}
       footer={<BigButton label="Cancel" tone="neutral" variant="outlined" onPress={cancel} />}
     >
@@ -199,13 +207,24 @@ export function PatronSignInScreen({ navigation, route }: Props) {
         />
       ) : null}
 
-      <View style={styles.scannerArea}>
-        <CameraScanner
-          paused={busy}
-          label="Library card barcode"
-          onScan={(barcode) => void handleBarcode(barcode)}
+      {usesCamera ? (
+        <View style={styles.scannerArea}>
+          <CameraScanner
+            paused={busy}
+            mode={settings.idMethod === 'qr' ? 'qr' : 'barcode'}
+            label={settings.idMethod === 'qr' ? 'Library app QR code' : 'Library card barcode'}
+            onScan={(barcode) => void handleBarcode(barcode)}
+          />
+        </View>
+      ) : (
+        <SwipeReader
+          disabled={busy}
+          onSwipe={(value) => {
+            const barcode = parseSwipe(value);
+            if (barcode) void handleBarcode(barcode);
+          }}
         />
-      </View>
+      )}
 
       {busy ? (
         <View style={styles.busy} accessibilityLiveRegion="polite">
@@ -216,7 +235,7 @@ export function PatronSignInScreen({ navigation, route }: Props) {
 
       <BarcodeField
         key={resetToken}
-        label="Or type your card number"
+        label={copy.field}
         disabled={busy}
         onSubmit={(barcode) => void handleBarcode(barcode)}
       />

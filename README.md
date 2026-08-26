@@ -15,6 +15,10 @@ and leave. Staff configure the station behind a PIN.
   manual entry field and its Enter key submits. The field is not auto-focused,
   because the soft keyboard would cover the camera viewfinder, so a wedge-only
   deployment needs one tap on the field to begin.
+- **Configurable identification method** — library card barcode, a QR code in
+  the library's phone app, or a mag-stripe student ID. A station uses exactly
+  one; the home screen shows a single matching instruction and the patron is
+  never asked to choose. Items being checked out are always barcodes.
 - **Optional patron PIN** via `mod-patron-pin`, with a large on-screen keypad.
 - **Account view** showing loans, due dates, overdue items, fees and blocks.
 - **One-tap renewals** through `/circulation/renew-by-barcode`.
@@ -91,6 +95,20 @@ directly. Enter:
 Tap **Connect and verify**. This signs in, confirms the service point exists, and
 loads patron groups. Then set a **staff PIN** before leaving the station, or
 anyone can reopen these settings.
+
+Under **Identification**, choose how patrons identify themselves at this
+station. Under **Branding**, set the institution name, help desk location and
+hours, and URLs for the hero photograph and logo shown on the home screen. Any
+branding field left empty degrades gracefully — no hero image renders a solid
+navy panel rather than a gap.
+
+#### Identification methods
+
+| Method | How it works | Notes |
+|---|---|---|
+| Library card barcode | Camera reads the card | Default |
+| QR code in our app | Camera reads a QR code | **Placeholder.** The decoded text is looked up as a patron barcode. If your app encodes something else — a token or a URL — that mapping still needs defining. |
+| Student ID swipe | Mag-stripe reader, keyboard-wedge | No camera is opened. ISO 7811 sentinels are stripped and the barcode extracted; see `src/utils/magstripe.ts`. |
 
 ## Security model
 

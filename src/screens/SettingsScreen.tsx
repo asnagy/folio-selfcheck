@@ -11,6 +11,7 @@ import {
   hasAdminPin,
   resetStation,
   setAdminPin,
+  type IdMethod,
   type KioskSettings,
   type OrientationMode,
 } from '@/config/settings';
@@ -205,6 +206,63 @@ function SettingsForm({
             label={busy ? 'Connecting…' : 'Connect and verify'}
             disabled={busy || !draft.baseUrl || !draft.tenant || !username || !password}
             onPress={() => void connect()}
+          />
+        </Section>
+
+        <Section title="Identification">
+          <Text variant="titleMedium">How do patrons identify themselves at this station?</Text>
+          <HelperText type="info">
+            A station uses one method. Items being checked out are always scanned as barcodes.
+          </HelperText>
+          <SegmentedButtons
+            value={draft.idMethod}
+            onValueChange={(value) => patch('idMethod', value as IdMethod)}
+            buttons={[
+              { value: 'barcode', label: 'Card barcode' },
+              { value: 'qr', label: 'QR code' },
+              { value: 'magstripe', label: 'ID swipe' },
+            ]}
+          />
+          {draft.idMethod === 'qr' ? (
+            <HelperText type="info">
+              QR sign-in reads the code and looks it up as a patron barcode. If your app encodes
+              something else, that mapping still needs to be defined.
+            </HelperText>
+          ) : null}
+        </Section>
+
+        <Section title="Branding">
+          <Field
+            label="Institution name"
+            value={draft.institutionName}
+            onChange={(value) => patch('institutionName', value)}
+            autoCapitalize="words"
+            help="Shown large on the home screen, above the station name."
+          />
+          <Field
+            label="Hero image URL"
+            value={draft.heroImageUrl}
+            onChange={(value) => patch('heroImageUrl', value)}
+            keyboardType="url"
+            help="Campus or library photograph. Left empty, the home screen uses a solid navy panel."
+          />
+          <Field
+            label="Logo URL"
+            value={draft.logoUrl}
+            onChange={(value) => patch('logoUrl', value)}
+            keyboardType="url"
+          />
+          <Field
+            label="Help desk location"
+            value={draft.helpDeskLocation}
+            onChange={(value) => patch('helpDeskLocation', value)}
+            autoCapitalize="words"
+          />
+          <Field
+            label="Help desk hours"
+            value={draft.helpDeskHours}
+            onChange={(value) => patch('helpDeskHours', value)}
+            autoCapitalize="words"
           />
         </Section>
 

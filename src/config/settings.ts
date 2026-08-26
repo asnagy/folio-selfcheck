@@ -24,8 +24,28 @@ const KEY_ADMIN_PIN = 'folio.selfcheck.adminPin';
  */
 export type OrientationMode = 'auto' | 'landscape' | 'portrait';
 
+/**
+ * How patrons identify themselves at this station.
+ *
+ * A station always uses exactly one method — it is deployment configuration,
+ * not a choice the patron makes. Libraries differ: a card barcode, a QR code in
+ * a phone app, or a mag-stripe student ID swiped through a reader.
+ */
+export type IdMethod = 'barcode' | 'qr' | 'magstripe';
+
 export interface KioskSettings {
   orientation: OrientationMode;
+  /** How patrons identify themselves. Items are always scanned as barcodes. */
+  idMethod: IdMethod;
+
+  /** Branding shown on the home screen. Empty values fall back gracefully. */
+  institutionName: string;
+  /** Remote URL for the hero photograph; empty renders the navy fallback. */
+  heroImageUrl: string;
+  /** Remote URL for the institution logo; empty renders a translucent slot. */
+  logoUrl: string;
+  helpDeskLocation: string;
+  helpDeskHours: string;
   baseUrl: string;
   tenant: string;
   servicePointId: string;
@@ -48,6 +68,12 @@ export interface KioskSettings {
 
 export const DEFAULT_SETTINGS: KioskSettings = {
   orientation: 'auto',
+  idMethod: 'barcode',
+  institutionName: '',
+  heroImageUrl: '',
+  logoUrl: '',
+  helpDeskLocation: '',
+  helpDeskHours: '',
   baseUrl: '',
   tenant: '',
   servicePointId: '',

@@ -36,9 +36,15 @@ interface CameraScannerProps {
   /** Pauses reads while a checkout request is in flight. */
   paused?: boolean;
   label?: string;
+  /**
+   * `qr` narrows decoding to QR alone and frames a square, which is both what a
+   * patron expects to aim at and a guard against the camera picking a stray
+   * barcode off nearby packaging.
+   */
+  mode?: 'barcode' | 'qr';
 }
 
-export function CameraScanner({ onScan, paused = false, label }: CameraScannerProps) {
+export function CameraScanner({ onScan, paused = false, label, mode = 'barcode' }: CameraScannerProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [torch, setTorch] = useState(false);
   const lastScan = useRef<{ value: string; at: number } | undefined>(undefined);
@@ -101,13 +107,15 @@ export function CameraScanner({ onScan, paused = false, label }: CameraScannerPr
         style={StyleSheet.absoluteFill}
         facing="back"
         enableTorch={torch}
-        barcodeScannerSettings={{ barcodeTypes: [...LIBRARY_SYMBOLOGIES] }}
+        barcodeScannerSettings={{
+          barcodeTypes: mode === 'qr' ? ['qr'] : [...LIBRARY_SYMBOLOGIES],
+        }}
         onBarcodeScanned={paused ? undefined : handleScan}
       />
 
       {/* Aiming guide. Purely decorative, so it is hidden from screen readers. */}
       <View style={styles.reticle} pointerEvents="none" accessibilityElementsHidden>
-        <View style={styles.reticleInner} />
+        <View style={mode === 'qr' ? styles.reticleSquare : styles.reticleInner} />
       </View>
 
       {label ? (
@@ -161,6 +169,14 @@ const styles = StyleSheet.create({
   reticleInner: {
     width: '72%',
     height: '46%',
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 12,
+  },
+  /** A QR code is square, so the guide is too. */
+  reticleSquare: {
+    aspectRatio: 1,
+    height: '72%',
     borderWidth: 4,
     borderColor: 'rgba(255,255,255,0.9)',
     borderRadius: 12,
